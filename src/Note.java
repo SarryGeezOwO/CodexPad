@@ -8,7 +8,8 @@ import java.io.*;
 public class Note extends JPanel {
 
     private Font interFont;
-    private final File noteFile;
+    private File noteFile;
+    public JLabel title;
 
     String lastModified;
     String importanceLevel;
@@ -46,6 +47,9 @@ public class Note extends JPanel {
     }
     public File getNoteFile() {
         return noteFile;
+    }
+    public void setNoteFile(File newFile) {
+        noteFile = newFile;
     }
 
     Note(File noteFile, MainClass holder) {
@@ -92,7 +96,7 @@ public class Note extends JPanel {
         }
 
         String name = noteFile.getName().substring(0, noteFile.getName().length()-4);
-        JLabel title = new JLabel(name);
+        title = new JLabel(name);
         title.setFont(interFont);
         title.setForeground(new Color(0xDEDEDE));
 
@@ -117,18 +121,20 @@ public class Note extends JPanel {
         importance.setOpaque(false);
         importance.setBackground(new Color(0xC42020));
         importance.setForeground(Color.white);
-        importance.setBorder(new EmptyBorder(2, 5, 2, 5));
+        importance.setBorder(new EmptyBorder(2, 5, 2, 10));
 
         JLabel date = new JLabel(lastModified);
         date.setForeground(new Color(0xDEDEDE));
-        date.setBorder(new EmptyBorder(0, 5, 0, 20));
+        date.setBorder(new EmptyBorder(0, 5, 0, 60));
+        date.setIcon(calendarIcon);
+        date.setHorizontalTextPosition(JLabel.TRAILING);
 
         JButton favoriteBtn = new JButton();
         favoriteBtn.setPreferredSize(new Dimension(20, 20));
         favoriteBtn.setIcon(starIcon);
         favoriteBtn.setContentAreaFilled(false);
         favoriteBtn.setOpaque(false);
-        favoriteBtn.setBorder(new EmptyBorder(0, 0, 0, 10));
+        favoriteBtn.setBorder(new EmptyBorder(0, 0, 0, 5));
         favoriteBtn.setFocusable(false);
         favoriteBtn.addMouseListener(new MouseAdapter() {
             @Override

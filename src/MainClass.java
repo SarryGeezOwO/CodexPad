@@ -1,10 +1,13 @@
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 public class MainClass extends FrameTemplate {
 
@@ -24,7 +27,8 @@ public class MainClass extends FrameTemplate {
     MainClass() {
         super("CodexPad", 1200, 720, true);
         try {
-            noteStorage = new File("./NoteStorage"); // path
+            noteStorage = new File("./NoteStorage"); // "Database" folder path
+            noteStorage.mkdir(); // If somehow my Supreme Powerful Database didn't work I have to revive it then
 
             File inter_file = new File("./res/font/inter_SemiBold.ttf");
             File inter_file2 = new File("./res/font/inter.ttf");
@@ -73,10 +77,12 @@ public class MainClass extends FrameTemplate {
                         File[] list = noteStorage.listFiles();
                         int additional = 0;
                         for(int i = 0; i < list.length; i++) {
-                            if(Integer.parseInt(String.valueOf(list[i].getName().charAt(9))) == additional) {
-                                additional++; // If it is somehow the same number then increment by one 🔥🔥🔥🔥
-                            }else {
-                                break; // Found a suitable animatronic suit 💀💀💀
+                            if(list[i].getName().contains("Untitled")) {
+                                if(Integer.parseInt(String.valueOf(list[i].getName().charAt(9))) == additional) {
+                                    additional++; // If it is somehow the same number then increment by one 🔥🔥🔥🔥
+                                }else {
+                                    break; // Found a suitable animatronic suit 💀💀💀
+                                }
                             }
                         }
 
@@ -226,6 +232,25 @@ public class MainClass extends FrameTemplate {
             titleField.setForeground(new Color(0xC4C4C4));
             titleField.setFont(f);
             titleField.setCaretColor(titleField.getForeground());
+            titleField.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) { changeContent(); }
+                @Override
+                public void removeUpdate(DocumentEvent e) { changeContent(); }
+                @Override
+                public void changedUpdate(DocumentEvent e) { changeContent(); }
+
+                public void changeContent() {
+                    File selectedFile = selectedNote.getNoteFile();
+                    File newFileName = new File(noteStorage.getPath()+"/"+titleField.getText()+".txt");
+                    if(selectedFile.renameTo(newFileName)) {
+                        selectedNote.setNoteFile(newFileName);
+                        selectedNote.title.setText(titleField.getText());
+                        refresh();
+                        titleField.requestFocus();
+                    }
+                }
+            });
 
             textArea = new JTextArea(selectedNote.getContent());
             textArea.setBackground(contentPanel.getBackground());
@@ -239,6 +264,51 @@ public class MainClass extends FrameTemplate {
             if(textArea.getText().isEmpty()) {
                 textArea.setText(". . .");
             }
+            textArea.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) { changeContent(); }
+                @Override
+                public void removeUpdate(DocumentEvent e) { changeContent(); }
+                @Override
+                public void changedUpdate(DocumentEvent e) { changeContent(); }
+
+                public void changeContent() {
+                    // TODO : Update the .txt file accordingly while also changing the preview note on the sidebar
+                    File currentFile = selectedNote.getNoteFile();
+                    try {
+                        FileReader fileReader = new FileReader(currentFile);
+                        BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+                        String line;
+                        ArrayList<String> contents = new ArrayList<>();
+                        int count = 0;
+
+                        while ((line = bufferedReader.readLine()) != null) {
+                            if(count < 3) {
+                                contents.add(line);
+                            }
+                            count++;
+                        }
+
+                        FileWriter writer = new FileWriter(currentFile);
+                        LocalDate now = LocalDate.now();
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+                        String nowStr = now.format(formatter);
+
+                        writer.write(nowStr);
+                        for(int i = 1; i < contents.size(); i++) {
+                            writer.write(contents.get(i)+"\n");
+                        }
+                        writer.write(textArea.getText());
+
+                        bufferedReader.close();
+                        fileReader.close();
+                        writer.close();
+                    }catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
 
             panel.add(titleField, BorderLayout.NORTH);
             panel.add(textArea, BorderLayout.CENTER);
@@ -254,7 +324,7 @@ public class MainClass extends FrameTemplate {
     }
 
     public static void main(String[] args) {
-        new MainClass();
+        SwingUtilities.invokeLater(() -> new MainClass());
     }
 
 }
