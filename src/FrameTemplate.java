@@ -39,6 +39,7 @@ public class FrameTemplate extends JFrame implements MouseListener, MouseMotionL
         titleBar.setLayout(new FlowLayout(FlowLayout.TRAILING, 0, 0));
         contentPanel.setBorder(BorderFactory.createLineBorder(titleBar.getBackground(), 2));
 
+
         JLabel titleLabel = new JLabel(title);
         titleLabel.setPreferredSize(new Dimension(this.getWidth()-40, 20));
         titleLabel.setIcon(frameIcon);
