@@ -1,12 +1,8 @@
 import javax.swing.*;
-import javax.swing.text.DateFormatter;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.io.*;
-import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -22,8 +18,11 @@ public class MainClass extends FrameTemplate {
     int currentScroll;
     JScrollBar scrollBar;
 
+    public JTextField titleField;
+    public JTextArea textArea;
+
     MainClass() {
-        super("CodexPad", 1200, 720, false);
+        super("CodexPad", 1200, 720, true);
         try {
             noteStorage = new File("./NoteStorage"); // path
 
@@ -42,7 +41,7 @@ public class MainClass extends FrameTemplate {
         this.setVisible(true);
     }
 
-    private void refresh() {
+    public void refresh() {
         contentPanel.removeAll();
         contentPanel.add(createHeader(), BorderLayout.NORTH);
         contentPanel.add(createSideBar(), BorderLayout.WEST);
@@ -70,7 +69,17 @@ public class MainClass extends FrameTemplate {
                 super.mousePressed(e);
                 if(noteStorage.isDirectory()) {
                     try {
-                        int additional = noteStorage.listFiles().length;
+
+                        File[] list = noteStorage.listFiles();
+                        int additional = 0;
+                        for(int i = 0; i < list.length; i++) {
+                            if(Integer.parseInt(String.valueOf(list[i].getName().charAt(9))) == additional) {
+                                additional++; // If it is somehow the same number then increment by one 🔥🔥🔥🔥
+                            }else {
+                                break; // Found a suitable animatronic suit 💀💀💀
+                            }
+                        }
+
                         File newFile = new File(noteStorage.getPath()+"/Untitled("+additional+").txt");
                         if(newFile.createNewFile()) {
                             LocalDate now = LocalDate.now();
@@ -84,11 +93,26 @@ public class MainClass extends FrameTemplate {
 
                             writer.close();
                             refresh();
+                        }else {
+                            // TODO : Show warning message that it failed lmao
+                            new CustomDialog("Error...", 320, 110, "Unable to create new Note...");
                         }
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
                 }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                addNote.setBackground(new Color(0x0A9EBF));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                addNote.setBackground(new Color(0x1789A0));
             }
         });
         panel.add(addNote);
@@ -107,7 +131,7 @@ public class MainClass extends FrameTemplate {
             scrollHeight = noteStorage.listFiles().length * 65;
             for(File n : noteStorage.listFiles()) {
                 if(n.getName().contains(".txt")) {
-                    Note note = new Note(n);
+                    Note note = new Note(n, this);
                     note.setPreferredSize(new Dimension(248, 60));
                     if(selectedNote != null) {
                         if(n.getName().equals(selectedNote.getNoteFile().getName())) {
@@ -191,7 +215,7 @@ public class MainClass extends FrameTemplate {
             File noteFile = selectedNote.getNoteFile();
 
             String name = noteFile.getName().substring(0, noteFile.getName().length()-4);
-            JTextField titleField = new JTextField(name);
+            titleField = new JTextField(name);
             titleField.setBackground(contentPanel.getBackground());
             titleField.setPreferredSize(new Dimension(440, 50));
             titleField.setBorder(BorderFactory.createCompoundBorder(
@@ -201,15 +225,20 @@ public class MainClass extends FrameTemplate {
             Font f = derivedFont.deriveFont(30f);
             titleField.setForeground(new Color(0xC4C4C4));
             titleField.setFont(f);
+            titleField.setCaretColor(titleField.getForeground());
 
-            JTextArea textArea = new JTextArea(selectedNote.getContent());
+            textArea = new JTextArea(selectedNote.getContent());
             textArea.setBackground(contentPanel.getBackground());
-            textArea.setMargin(new Insets(5, 5, 5, 5));
+            textArea.setMargin(new Insets(20, 5, 5, 5));
             textArea.setLineWrap(true);
             textArea.setWrapStyleWord(true);
             Font f2 = derivedFont2.deriveFont(16f);
             textArea.setForeground(new Color(0xB9B9B9));
             textArea.setFont(f2);
+            textArea.setCaretColor(titleField.getForeground());
+            if(textArea.getText().isEmpty()) {
+                textArea.setText(". . .");
+            }
 
             panel.add(titleField, BorderLayout.NORTH);
             panel.add(textArea, BorderLayout.CENTER);

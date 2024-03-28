@@ -1,6 +1,8 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.*;
 
 public class Note extends JPanel {
@@ -12,8 +14,19 @@ public class Note extends JPanel {
     String importanceLevel;
     String isPinned;
     String content;
+    MainClass holder;
+
     private final ImageIcon calendarIcon = FrameTemplate.resizeImageIcon(
             new ImageIcon("./res/icon/calendar.png"), 15, 15
+    );
+    private final ImageIcon starIcon = FrameTemplate.resizeImageIcon(
+            new ImageIcon("./res/icon/star.png"), 15, 15
+    );
+    private final ImageIcon starCloseIcon = FrameTemplate.resizeImageIcon(
+            new ImageIcon("./res/icon/star_close.png"), 15, 15
+    );
+    private final ImageIcon trashIcon = FrameTemplate.resizeImageIcon(
+            new ImageIcon("./res/icon/trash.png"), 15, 15
     );
 
     public String getLastModified() {
@@ -35,7 +48,8 @@ public class Note extends JPanel {
         return noteFile;
     }
 
-    Note(File noteFile) {
+    Note(File noteFile, MainClass holder) {
+        this.holder = holder;
         setOpaque(false);
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -107,11 +121,43 @@ public class Note extends JPanel {
 
         JLabel date = new JLabel(lastModified);
         date.setForeground(new Color(0xDEDEDE));
-        date.setBorder(new EmptyBorder(0, 5, 0, 0));
+        date.setBorder(new EmptyBorder(0, 5, 0, 20));
 
+        JButton favoriteBtn = new JButton();
+        favoriteBtn.setPreferredSize(new Dimension(20, 20));
+        favoriteBtn.setIcon(starIcon);
+        favoriteBtn.setContentAreaFilled(false);
+        favoriteBtn.setOpaque(false);
+        favoriteBtn.setBorder(new EmptyBorder(0, 0, 0, 10));
+        favoriteBtn.setFocusable(false);
+        favoriteBtn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
+            }
+        });
+
+        JButton trashBtn = new JButton();
+        trashBtn.setPreferredSize(new Dimension(20, 20));
+        trashBtn.setIcon(trashIcon);
+        trashBtn.setContentAreaFilled(false);
+        trashBtn.setOpaque(false);
+        trashBtn.setBorder(null);
+        trashBtn.setFocusable(false);
+        trashBtn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
+                noteFile.delete();
+                holder.selectedNote = null;
+                holder.refresh();
+            }
+        });
 
         bottom.add(importance);
         bottom.add(date);
+        bottom.add(favoriteBtn);
+        bottom.add(trashBtn);
 
         add(title, BorderLayout.NORTH);
         add(bottom, BorderLayout.SOUTH);

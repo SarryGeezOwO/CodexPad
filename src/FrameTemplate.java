@@ -21,7 +21,12 @@ public class FrameTemplate extends JFrame implements MouseListener, MouseMotionL
     FrameTemplate(String title, int width, int height, boolean operation) {
         setTitle(title);
         setSize(width, height);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        if(operation)
+            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        else
+            setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+
         setUndecorated(true);
         setLocationRelativeTo(null);
 
@@ -53,7 +58,10 @@ public class FrameTemplate extends JFrame implements MouseListener, MouseMotionL
         closeBtn.setBorderPainted(false);
         closeBtn.setIcon(closeIcon);
         closeBtn.addActionListener(event -> {
-            System.exit(0);
+            if(operation)
+                System.exit(0);
+            else
+                this.dispose();
         });
 
         minBtn = new JButton();
