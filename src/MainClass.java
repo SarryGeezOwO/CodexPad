@@ -291,13 +291,17 @@ public class MainClass extends FrameTemplate {
                         }
 
                         FileWriter writer = new FileWriter(currentFile);
+
                         LocalDate now = LocalDate.now();
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
                         String nowStr = now.format(formatter);
 
-                        writer.write(nowStr);
-                        for(int i = 1; i < contents.size(); i++) {
-                            writer.write(contents.get(i)+"\n");
+                        writer.write(nowStr+"\n");
+                        int counter = 0;
+                        for(String str : contents) {
+                            if(counter != 0)
+                                writer.write(str+"\n");
+                            counter++;
                         }
                         writer.write(textArea.getText());
 
