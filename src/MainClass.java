@@ -24,6 +24,8 @@ public class MainClass extends FrameTemplate {
     public JTextField titleField;
     public JTextArea textArea;
 
+    JButton highBtn, midBtn, lowBtn;
+
     MainClass() {
         super("CodexPad", 1200, 720, true);
         try {
@@ -57,10 +59,18 @@ public class MainClass extends FrameTemplate {
 
     private JPanel createHeader() {
         JPanel panel = new JPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.TRAILING, 10, 10));
+        panel.setLayout(new FlowLayout(FlowLayout.LEADING, 10, 10));
         panel.setPreferredSize(new Dimension(999, 50));
         panel.setBackground(contentPanel.getBackground());
         panel.setBorder(BorderFactory.createMatteBorder(0,0,1,0,  new Color(36, 36, 36)));
+
+        JLabel label = new JLabel("Notes");
+        label.setPreferredSize(new Dimension(getWidth()-130, 30));
+        label.setForeground(new Color(0xC4C4C4));
+
+        Font f = derivedFont.deriveFont(18f);
+        label.setFont(f);
+        panel.add(label);
 
         JButton addNote = new RoundedButton("Add note", 15);
         addNote.setPreferredSize(new Dimension(100, 30));
@@ -254,7 +264,7 @@ public class MainClass extends FrameTemplate {
 
             textArea = new JTextArea(selectedNote.getContent());
             textArea.setBackground(contentPanel.getBackground());
-            textArea.setMargin(new Insets(20, 5, 5, 5));
+            textArea.setMargin(new Insets(15, 5, 5, 5));
             textArea.setLineWrap(true);
             textArea.setWrapStyleWord(true);
             Font f2 = derivedFont2.deriveFont(16f);
@@ -314,8 +324,35 @@ public class MainClass extends FrameTemplate {
                 }
             });
 
+            JPanel toolbar = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    Dimension arcs = new Dimension(10, 10);
+                    int width = getWidth();
+                    int height = getHeight();
+                    Graphics2D g2D = (Graphics2D) g;
+                    g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                    g2D.setColor(getBackground());
+                    g2D.fillRoundRect(0, 0, width-1, height-1, arcs.width, arcs.height);
+                }
+            };
+            toolbar.setOpaque(false);
+            toolbar.setPreferredSize(new Dimension(404, 30));
+            toolbar.setBackground(contentPanel.getBackground());
+            toolbar.setBorder(BorderFactory.createMatteBorder(2,0,0,0, new Color(36,36,36)));
+            toolbar.setLayout(new FlowLayout(FlowLayout.LEADING, 5, 0));
+
+            highBtn = importanceButton("High", new Color(0x942222));
+            midBtn = importanceButton("Mid", new Color(0x1C9C2E));
+            lowBtn = importanceButton("Low", new Color(0x1E449D));
+
+            toolbar.add(highBtn); toolbar.add(midBtn); toolbar.add(lowBtn);
+
             panel.add(titleField, BorderLayout.NORTH);
             panel.add(textArea, BorderLayout.CENTER);
+            panel.add(toolbar, BorderLayout.SOUTH);
         }else {
             JLabel reminder = new JLabel("No note is currently selected...");
             reminder.setHorizontalAlignment(JLabel.CENTER);
@@ -327,8 +364,85 @@ public class MainClass extends FrameTemplate {
         return panel;
     }
 
+    JButton importanceButton(String msg, Color color) {
+        JButton btn = new RoundedButton(msg, 20);
+        btn.setPreferredSize(new Dimension(80, 28));
+        btn.setOpaque(false);
+        btn.setForeground(new Color(0xC4C4C4));
+        btn.setBackground(new Color(0x4E4E4E));
+        if(selectedNote.getImportanceLevel().equalsIgnoreCase("high") && msg.equalsIgnoreCase("high")) {
+            btn.setBackground(new Color(0x942222));
+        }else if(selectedNote.getImportanceLevel().equalsIgnoreCase("mid") && msg.equalsIgnoreCase("mid")) {
+            btn.setBackground(new Color(0x1C9C2E));
+        }else if(selectedNote.getImportanceLevel().equalsIgnoreCase("low") && msg.equalsIgnoreCase("low")) {
+            btn.setBackground(new Color(0x1E449D));
+        }
+        btn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e); // Handle Importance level change
+                File currentFile = selectedNote.getNoteFile();
+                selectedNote.setImportanceLevel(msg);
+                try {
+                    FileReader fileReader = new FileReader(currentFile);
+                    BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+                    String line;
+                    ArrayList<String> contents = new ArrayList<>();
+                    int count = 0;
+
+                    while ((line = bufferedReader.readLine()) != null) {
+                        if(count < 3) {
+                            contents.add(line);
+                        }
+                        count++;
+                    }
+
+                    FileWriter writer = new FileWriter(currentFile);
+
+                    LocalDate now = LocalDate.now();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+                    String nowStr = now.format(formatter);
+
+                    writer.write(nowStr+"\n"); // Last modified
+                    writer.write(msg+"\n"); // Change Importance
+                    writer.write(contents.get(2)+"\n"); // Rewrite Pin
+                    writer.write(textArea.getText()); // Rewrite TextArea
+
+                    bufferedReader.close();
+                    fileReader.close();
+                    writer.close();
+
+                    refresh();
+                }catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                btn.setBackground(color);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                btn.setBackground(new Color(0x4E4E4E));
+                if(selectedNote.getImportanceLevel().equalsIgnoreCase("high") && msg.equalsIgnoreCase("high")) {
+                    btn.setBackground(new Color(0x942222));
+                }else if(selectedNote.getImportanceLevel().equalsIgnoreCase("mid") && msg.equalsIgnoreCase("mid")) {
+                    btn.setBackground(new Color(0x1C9C2E));
+                }else if(selectedNote.getImportanceLevel().equalsIgnoreCase("low") && msg.equalsIgnoreCase("low")) {
+                    btn.setBackground(new Color(0x1E449D));
+                }
+            }
+        });
+
+        return btn;
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new MainClass());
     }
-
 }

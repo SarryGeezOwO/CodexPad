@@ -51,6 +51,7 @@ public class Note extends JPanel {
     public void setNoteFile(File newFile) {
         noteFile = newFile;
     }
+    public void setImportanceLevel(String imp) { importanceLevel = imp; }
 
     Note(File noteFile, MainClass holder) {
         this.holder = holder;
@@ -119,9 +120,17 @@ public class Note extends JPanel {
         importance.setFont(interFont);
         importance.setVerticalAlignment(JLabel.CENTER);
         importance.setOpaque(false);
-        importance.setBackground(new Color(0xC42020));
         importance.setForeground(Color.white);
         importance.setBorder(new EmptyBorder(2, 5, 2, 10));
+        importance.setPreferredSize(new Dimension(50, 20));
+        importance.setHorizontalAlignment(JLabel.CENTER);
+        if(importanceLevel.equalsIgnoreCase("high")) {
+            importance.setBackground(new Color(0x942222));
+        }else if(importanceLevel.equalsIgnoreCase("mid")) {
+            importance.setBackground(new Color(0x1C9C2E));
+        }else if(importanceLevel.equalsIgnoreCase("low")) {
+            importance.setBackground(new Color(0x1E449D));
+        }
 
         JLabel date = new JLabel(lastModified);
         date.setForeground(new Color(0xDEDEDE));
