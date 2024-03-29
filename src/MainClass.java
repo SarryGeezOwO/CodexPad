@@ -22,10 +22,20 @@ public class MainClass extends FrameTemplate {
     JScrollBar scrollBar;
 
     public JTextField titleField;
+    public JTextField searchField;
     public JTextArea textArea;
 
     JButton highBtn, midBtn, lowBtn;
+    private ImageIcon emptyImg = resizeImageIcon(
+            new ImageIcon("./res/icon/notebook.png"), 250, 250
+    );
+    private ImageIcon searchIcon = resizeImageIcon(
+            new ImageIcon("./res/icon/search.png"), 20, 20
+    );
+    ArrayList<File> searchList = new ArrayList<>();
+    String searchValue;
 
+    // ================================================== Constructor ===========================================================//
     MainClass() {
         super("CodexPad", 1200, 720, true);
         try {
@@ -41,22 +51,35 @@ public class MainClass extends FrameTemplate {
             throw new RuntimeException(e);
         }
 
+        JPanel sidePanel = new JPanel();
+        sidePanel.setPreferredSize(new Dimension(250, 404));
+        sidePanel.setLayout(new BorderLayout());
+
         contentPanel.add(createHeader(), BorderLayout.NORTH);
-        contentPanel.add(createSideBar(), BorderLayout.WEST);
+        sidePanel.add(createSideBar(), BorderLayout.CENTER);
+        sidePanel.add(createFilterTab(), BorderLayout.SOUTH);
+        contentPanel.add(sidePanel, BorderLayout.WEST);
         contentPanel.add(createNoteEditor(), BorderLayout.CENTER);
         this.setVisible(true);
     }
 
     public void refresh() {
         contentPanel.removeAll();
+        JPanel sidePanel = new JPanel();
+        sidePanel.setPreferredSize(new Dimension(250, 404));
+        sidePanel.setLayout(new BorderLayout());
+
         contentPanel.add(createHeader(), BorderLayout.NORTH);
-        contentPanel.add(createSideBar(), BorderLayout.WEST);
+        sidePanel.add(createSideBar(), BorderLayout.CENTER);
+        sidePanel.add(createFilterTab(), BorderLayout.SOUTH);
+        contentPanel.add(sidePanel, BorderLayout.WEST);
         contentPanel.add(createNoteEditor(), BorderLayout.CENTER);
         revalidate();
         repaint();
         scrollBar.setValue(currentScroll);
     }
 
+    // ================================================== Header ===============================================================//
     private JPanel createHeader() {
         JPanel panel = new JPanel();
         panel.setLayout(new FlowLayout(FlowLayout.LEADING, 10, 10));
@@ -65,17 +88,58 @@ public class MainClass extends FrameTemplate {
         panel.setBorder(BorderFactory.createMatteBorder(0,0,1,0,  new Color(36, 36, 36)));
 
         JLabel label = new JLabel("Notes");
-        label.setPreferredSize(new Dimension(getWidth()-130, 30));
+        label.setPreferredSize(new Dimension(235, 30));
         label.setForeground(new Color(0xC4C4C4));
+
+        JLabel searchLabel = new JLabel();
+        searchLabel.setPreferredSize(new Dimension(20,20));
+        searchLabel.setBorder(null);
+        searchLabel.setIcon(searchIcon);
+
+        searchField = new JTextField(searchValue);
+        searchField.setOpaque(false);
+        searchField.setForeground(new Color(0x9F9F9F));
+        searchField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0,0,2,0, new Color(60, 60, 60)),
+                BorderFactory.createEmptyBorder(0,5,0,5)
+        ));
+        searchField.setPreferredSize(new Dimension(getWidth()-405, 30));
+        searchField.setCaretColor(new Color(0x4E4E4E));
+        Font searchFont = derivedFont2.deriveFont(16f);
+        searchField.setFont(searchFont);
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { searchContent(); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { searchContent(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { searchContent(); }
+
+            private void searchContent() {
+                searchList.clear();
+                searchValue = searchField.getText();
+                if(!searchField.getText().isEmpty()) {
+                    for(File f : noteStorage.listFiles()) {
+                        if(f.getName().toLowerCase().contains(searchField.getText().toLowerCase())) {
+                            searchList.add(f);
+                        }
+                    }
+                }
+                refresh();
+                searchField.requestFocus();
+            }
+        });
 
         Font f = derivedFont.deriveFont(18f);
         label.setFont(f);
         panel.add(label);
+        panel.add(searchLabel);
+        panel.add(searchField);
 
         JButton addNote = new RoundedButton("Add note", 15);
         addNote.setPreferredSize(new Dimension(100, 30));
-        addNote.setBackground(new Color(0x1789A0));
-        addNote.setForeground(contentPanel.getBackground());
+        addNote.setBackground(new Color(0x0F6B7F));
+        addNote.setForeground(new Color(0xC4C4C4));
         addNote.setFont(interFont);
         addNote.addMouseListener(new MouseAdapter() {
             @Override
@@ -88,6 +152,7 @@ public class MainClass extends FrameTemplate {
                         int additional = 0;
                         for(int i = 0; i < list.length; i++) {
                             if(list[i].getName().contains("Untitled")) {
+                                // Skip Files that actually have a name lmao
                                 if(Integer.parseInt(String.valueOf(list[i].getName().charAt(9))) == additional) {
                                     additional++; // If it is somehow the same number then increment by one 🔥🔥🔥🔥
                                 }else {
@@ -122,30 +187,43 @@ public class MainClass extends FrameTemplate {
             @Override
             public void mouseEntered(MouseEvent e) {
                 super.mouseEntered(e);
-                addNote.setBackground(new Color(0x0A9EBF));
+                addNote.setBackground(new Color(0x0A90AE));
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 super.mouseExited(e);
-                addNote.setBackground(new Color(0x1789A0));
+                addNote.setBackground(new Color(0x0F6B7F));
             }
         });
         panel.add(addNote);
         return panel;
     }
 
+    // ================================================== Side Bar =============================================================//
     private JScrollPane createSideBar() {
         JPanel panel = new JPanel();
         panel.setLayout(new FlowLayout(FlowLayout.TRAILING, 0, 0));
         panel.setPreferredSize(new Dimension(250, scrollHeight));
-        panel.setBackground(contentPanel.getBackground());
+        panel.setBackground(new Color(23, 23, 27));
         panel.setBorder(BorderFactory.createMatteBorder(0,0,0,1,  new Color(36, 36, 36)));
 
         if(noteStorage.isDirectory()) {
 
-            scrollHeight = noteStorage.listFiles().length * 65;
-            for(File n : noteStorage.listFiles()) {
+            File[] filteredArray;
+            if(!searchList.isEmpty()) {
+                filteredArray = new File[searchList.size()];
+                filteredArray = searchList.toArray(filteredArray);
+            }else {
+                filteredArray = noteStorage.listFiles();
+            }
+
+            if(!searchField.getText().isEmpty() && searchList.isEmpty()) {
+                filteredArray = new File[0];
+            }
+
+            scrollHeight = filteredArray.length * 60;
+            for(File n : filteredArray) {
                 if(n.getName().contains(".txt")) {
                     Note note = new Note(n, this);
                     note.setPreferredSize(new Dimension(248, 60));
@@ -199,16 +277,10 @@ public class MainClass extends FrameTemplate {
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         scrollPane.setBorder(null);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(10);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(5);
         scrollPane.addMouseWheelListener(e -> {
-            //capturing previous value
             int previousValue = scrollBar.getValue();
-
             int addAmount;
-
-            //decide where the wheel scrolled
-            //depending on how fast you want to scroll
-            //you can chane the addAmount to something greater or lesser
 
             if(e.getWheelRotation()>0) {
                 addAmount = 2;
@@ -216,12 +288,33 @@ public class MainClass extends FrameTemplate {
                 addAmount = -2;
             }
 
-            //set the new value
             scrollBar.setValue(previousValue + addAmount);
         });
         return scrollPane;
     }
 
+    // ================================================== Filter Tab ===========================================================//
+    private JPanel createFilterTab() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new FlowLayout(FlowLayout.LEADING, 0 , 0));
+        panel.setPreferredSize(new Dimension(404, 260));
+        panel.setBackground(contentPanel.getBackground());
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(2,0,0,2, new Color(0x242424)),
+                BorderFactory.createEmptyBorder(5,5,5,5)
+        ));
+
+        JLabel label = new JLabel("Filter");
+        label.setPreferredSize(new Dimension(200, 50));
+        label.setForeground(new Color(0xC4C4C4));
+        Font f = derivedFont.deriveFont(18f);
+        label.setFont(f);
+
+        panel.add(label);
+        return panel;
+    }
+
+    // ================================================== Note Editor ==========================================================//
     private JPanel createNoteEditor() {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
@@ -348,6 +441,10 @@ public class MainClass extends FrameTemplate {
             midBtn = importanceButton("Mid", new Color(0x1C9C2E));
             lowBtn = importanceButton("Low", new Color(0x1E449D));
 
+            JLabel impLabel = new JLabel("Importance Level :   ");
+            impLabel.setForeground(new Color(0xC4C4C4));
+
+            toolbar.add(impLabel);
             toolbar.add(highBtn); toolbar.add(midBtn); toolbar.add(lowBtn);
 
             panel.add(titleField, BorderLayout.NORTH);
@@ -356,15 +453,21 @@ public class MainClass extends FrameTemplate {
         }else {
             JLabel reminder = new JLabel("No note is currently selected...");
             reminder.setHorizontalAlignment(JLabel.CENTER);
-            reminder.setFont(interFont);
-            reminder.setForeground(new Color(0xC4C4C4));
+
+            Font f = derivedFont.deriveFont(20f);
+            reminder.setFont(f);
+            reminder.setForeground(new Color(0x585867));
+            reminder.setIcon(emptyImg);
+            reminder.setIconTextGap(15);
+            reminder.setHorizontalTextPosition(JLabel.CENTER);
+            reminder.setVerticalTextPosition(JLabel.BOTTOM);
             panel.add(reminder, BorderLayout.CENTER);
         }
 
         return panel;
     }
 
-    JButton importanceButton(String msg, Color color) {
+    private JButton importanceButton(String msg, Color color) {
         JButton btn = new RoundedButton(msg, 20);
         btn.setPreferredSize(new Dimension(80, 28));
         btn.setOpaque(false);
@@ -443,6 +546,6 @@ public class MainClass extends FrameTemplate {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MainClass());
+        SwingUtilities.invokeLater(MainClass::new);
     }
 }

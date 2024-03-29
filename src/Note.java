@@ -4,6 +4,9 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 public class Note extends JPanel {
 
@@ -140,7 +143,9 @@ public class Note extends JPanel {
 
         JButton favoriteBtn = new JButton();
         favoriteBtn.setPreferredSize(new Dimension(20, 20));
-        favoriteBtn.setIcon(starIcon);
+
+        boolean check = Boolean.parseBoolean(isPinned);
+        favoriteBtn.setIcon((check) ? starCloseIcon : starIcon);
         favoriteBtn.setContentAreaFilled(false);
         favoriteBtn.setOpaque(false);
         favoriteBtn.setBorder(new EmptyBorder(0, 0, 0, 5));
@@ -149,6 +154,38 @@ public class Note extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
+                try {
+                    FileReader fileReader = new FileReader(noteFile);
+                    BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+                    String line;
+                    ArrayList<String> contents = new ArrayList<>();
+
+                    while ((line = bufferedReader.readLine()) != null) {
+                        contents.add(line);
+                    }
+
+                    FileWriter writer = new FileWriter(noteFile);
+                    int counter = 0;
+                    for(String str : contents) {
+                        if(counter < 2)
+                            writer.write(str+"\n");
+                        counter++;
+                    }
+                    boolean check = Boolean.parseBoolean(isPinned);
+                    writer.write((check) ? "false\n" : "true\n");
+                    for(int i = 3; i < contents.size(); i++) {
+                        writer.write(contents.get(i)+"\n");
+                    }
+
+                    bufferedReader.close();
+                    fileReader.close();
+                    writer.close();
+
+                    holder.refresh();
+                }catch (IOException e1) {
+                    e1.printStackTrace();
+                }
             }
         });
 

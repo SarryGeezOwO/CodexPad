@@ -1,7 +1,7 @@
 03-29-2024
 High
-false
-This serves as a introduction to the majestic adventures 
+true
+This serves as a introduction to the majestic adventures
 that awaits you in the future :D
 
 	~SarryGaez (creator)
