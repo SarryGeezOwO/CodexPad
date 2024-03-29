@@ -11,7 +11,7 @@ public class FrameTemplate extends JFrame implements MouseListener, MouseMotionL
             new ImageIcon("./res/icon/minimize.png"), 15, 15
     );
     private ImageIcon frameIcon = resizeImageIcon(
-            new ImageIcon("./res/icon/java.png"), 15, 15
+            new ImageIcon("./res/icon/app-icon.png"), 15, 15
     );
 
     JPanel titleBar, contentPanel;

@@ -1,10 +1,7 @@
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
@@ -29,16 +26,16 @@ public class MainClass extends FrameTemplate {
     public JTextArea textArea;
 
     JButton highBtn, midBtn, lowBtn;
-    private ImageIcon emptyImg = resizeImageIcon(
+    private final ImageIcon emptyImg = resizeImageIcon(
             new ImageIcon("./res/icon/notebook.png"), 250, 250
     );
-    private ImageIcon searchIcon = resizeImageIcon(
+    private final ImageIcon searchIcon = resizeImageIcon(
             new ImageIcon("./res/icon/search.png"), 20, 20
     );
-    private ImageIcon checkbox_check_icon = resizeImageIcon(
+    private final ImageIcon checkbox_check_icon = resizeImageIcon(
             new ImageIcon("./res/icon/checkbox.png"), 20, 20
     );
-    private ImageIcon checkbox_icon = resizeImageIcon(
+    private final ImageIcon checkbox_icon = resizeImageIcon(
             new ImageIcon("./res/icon/square-small.png"), 20, 20
     );
     ArrayList<File> searchList = new ArrayList<>();
@@ -64,6 +61,8 @@ public class MainClass extends FrameTemplate {
         } catch (IOException | FontFormatException e) {
             throw new RuntimeException(e);
         }
+
+        setIconImage(new ImageIcon("./res/icon/app-icon.png").getImage());
 
         JPanel sidePanel = new JPanel();
         sidePanel.setPreferredSize(new Dimension(250, 404));
@@ -187,7 +186,7 @@ public class MainClass extends FrameTemplate {
 
         JButton addNote = new RoundedButton("Add note", 15);
         addNote.setPreferredSize(new Dimension(100, 30));
-        addNote.setBackground(new Color(0x0F6B7F));
+        addNote.setBackground(new Color(0x1F47C3));
         addNote.setForeground(new Color(0xC4C4C4));
         addNote.setFont(interFont);
         addNote.addMouseListener(new MouseAdapter() {
@@ -199,12 +198,12 @@ public class MainClass extends FrameTemplate {
 
                         File[] list = noteStorage.listFiles();
                         int additional = 0;
-                        for(int i = 0; i < list.length; i++) {
-                            if(list[i].getName().contains("Untitled")) {
+                        for (File file : list) {
+                            if (file.getName().contains("Untitled")) {
                                 // Skip Files that actually have a name lmao
-                                if(Integer.parseInt(String.valueOf(list[i].getName().charAt(9))) == additional) {
+                                if (Integer.parseInt(String.valueOf(file.getName().charAt(9))) == additional) {
                                     additional++; // If it is somehow the same number then increment by one 🔥🔥🔥🔥
-                                }else {
+                                } else {
                                     break; // Found a suitable animatronic suit 💀💀💀
                                 }
                             }
@@ -236,13 +235,13 @@ public class MainClass extends FrameTemplate {
             @Override
             public void mouseEntered(MouseEvent e) {
                 super.mouseEntered(e);
-                addNote.setBackground(new Color(0x0A90AE));
+                addNote.setBackground(new Color(0x345CE3));
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 super.mouseExited(e);
-                addNote.setBackground(new Color(0x0F6B7F));
+                addNote.setBackground(new Color(0x1F47C3));
             }
         });
         panel.add(addNote);
@@ -260,6 +259,7 @@ public class MainClass extends FrameTemplate {
         if(noteStorage.isDirectory()) {
 
             File[] filteredArray;
+
             if(!isFavList) {
                 if(!searchList.isEmpty()) {
                     filteredArray = new File[searchList.size()];
@@ -274,6 +274,27 @@ public class MainClass extends FrameTemplate {
             }else {
                 filteredArray = new File[favouriteList.size()];
                 filteredArray = favouriteList.toArray(filteredArray);
+            }
+
+            if(highBool || midBool || lowBool) {
+                ArrayList<File> imp_col = new ArrayList<>();
+                if(highBool)
+                    imp_col.addAll(highList);
+                if(midBool)
+                    imp_col.addAll(midList);
+                if(lowBool)
+                    imp_col.addAll(lowList);
+
+                ArrayList<File> filteredCol = new ArrayList<>();
+                for(File f : imp_col) {
+                    for(File f2 : filteredArray) {
+                        if(f.getName().equals(f2.getName())) {
+                            filteredCol.add(f);
+                        }
+                    }
+                }
+                filteredArray = new File[filteredCol.size()];
+                filteredArray = filteredCol.toArray(filteredArray);
             }
 
             scrollHeight = filteredArray.length * 60;
@@ -419,7 +440,7 @@ public class MainClass extends FrameTemplate {
             refresh();
         });
 
-        JLabel copyrights = new JLabel("Copyrights@SarryGaez2024");
+        JLabel copyrights = new JLabel("~SarryGaez (Creator)");
         copyrights.setPreferredSize(new Dimension(225, 30));
         copyrights.setFont(interFont);
         copyrights.setForeground(new Color(0x565656));
