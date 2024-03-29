@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="CodexPad:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/CodexPad_jar</output-path>
+    <root id="archive" name="CodexPad.jar">
+      <element id="module-output" name="CodexPad" />
+    </root>
+  </artifact>
+</component>
