@@ -50,8 +50,8 @@ public class MainClass extends FrameTemplate {
     MainClass() {
         super("CodexPad", 1200, 720, true);
         try {
-            noteStorage.mkdir(); // If somehow my Supreme Powerful Database didn't work I have to revive it then
             noteStorage = new File("./NoteStorage"); // "Database" folder path
+            noteStorage.mkdir(); // If somehow my Supreme Powerful Database didn't work I have to revive it then
 
             File inter_file = new File("./res/font/inter_SemiBold.ttf");
             File inter_file2 = new File("./res/font/inter.ttf");
