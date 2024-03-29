@@ -1,7 +1,10 @@
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
@@ -32,8 +35,19 @@ public class MainClass extends FrameTemplate {
     private ImageIcon searchIcon = resizeImageIcon(
             new ImageIcon("./res/icon/search.png"), 20, 20
     );
+    private ImageIcon checkbox_check_icon = resizeImageIcon(
+            new ImageIcon("./res/icon/checkbox.png"), 20, 20
+    );
+    private ImageIcon checkbox_icon = resizeImageIcon(
+            new ImageIcon("./res/icon/square-small.png"), 20, 20
+    );
     ArrayList<File> searchList = new ArrayList<>();
+    ArrayList<File> favouriteList = new ArrayList<>();
+    ArrayList<File> highList = new ArrayList<>();
+    ArrayList<File> midList = new ArrayList<>();
+    ArrayList<File> lowList = new ArrayList<>();
     String searchValue;
+    boolean isFavList, highBool, midBool, lowBool;
 
     // ================================================== Constructor ===========================================================//
     MainClass() {
@@ -55,6 +69,10 @@ public class MainClass extends FrameTemplate {
         sidePanel.setPreferredSize(new Dimension(250, 404));
         sidePanel.setLayout(new BorderLayout());
 
+        getAttribute(favouriteList, 2, "true");
+        getAttribute(highList, 1, "high");
+        getAttribute(midList, 1, "mid");
+        getAttribute(lowList, 1, "low");
         contentPanel.add(createHeader(), BorderLayout.NORTH);
         sidePanel.add(createSideBar(), BorderLayout.CENTER);
         sidePanel.add(createFilterTab(), BorderLayout.SOUTH);
@@ -63,12 +81,43 @@ public class MainClass extends FrameTemplate {
         this.setVisible(true);
     }
 
+    public void getAttribute(ArrayList<File> list, int index, String checkValue) {
+        list.clear();
+        try {
+            for(File file : noteStorage.listFiles()) {
+                FileReader fileReader = new FileReader(file);
+                BufferedReader reader = new BufferedReader(fileReader);
+
+                String line;
+                int count = 0;
+                ArrayList<String> contents = new ArrayList<>();
+                while((line = reader.readLine()) != null && count < 3) {
+                    contents.add(line);
+                    count++;
+                }
+
+                if(contents.get(index).equalsIgnoreCase(checkValue)) {
+                    list.add(file);
+                }
+
+                reader.close();
+                fileReader.close();
+            }
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void refresh() {
         contentPanel.removeAll();
         JPanel sidePanel = new JPanel();
         sidePanel.setPreferredSize(new Dimension(250, 404));
         sidePanel.setLayout(new BorderLayout());
 
+        getAttribute(favouriteList, 2, "true");
+        getAttribute(highList, 1, "high");
+        getAttribute(midList, 1, "mid");
+        getAttribute(lowList, 1, "low");
         contentPanel.add(createHeader(), BorderLayout.NORTH);
         sidePanel.add(createSideBar(), BorderLayout.CENTER);
         sidePanel.add(createFilterTab(), BorderLayout.SOUTH);
@@ -211,15 +260,20 @@ public class MainClass extends FrameTemplate {
         if(noteStorage.isDirectory()) {
 
             File[] filteredArray;
-            if(!searchList.isEmpty()) {
-                filteredArray = new File[searchList.size()];
-                filteredArray = searchList.toArray(filteredArray);
-            }else {
-                filteredArray = noteStorage.listFiles();
-            }
+            if(!isFavList) {
+                if(!searchList.isEmpty()) {
+                    filteredArray = new File[searchList.size()];
+                    filteredArray = searchList.toArray(filteredArray);
+                }else {
+                    filteredArray = noteStorage.listFiles();
+                }
 
-            if(!searchField.getText().isEmpty() && searchList.isEmpty()) {
-                filteredArray = new File[0];
+                if(!searchField.getText().isEmpty() && searchList.isEmpty()) {
+                    filteredArray = new File[0];
+                }
+            }else {
+                filteredArray = new File[favouriteList.size()];
+                filteredArray = favouriteList.toArray(filteredArray);
             }
 
             scrollHeight = filteredArray.length * 60;
@@ -297,11 +351,11 @@ public class MainClass extends FrameTemplate {
     private JPanel createFilterTab() {
         JPanel panel = new JPanel();
         panel.setLayout(new FlowLayout(FlowLayout.LEADING, 0 , 0));
-        panel.setPreferredSize(new Dimension(404, 260));
+        panel.setPreferredSize(new Dimension(404, 190));
         panel.setBackground(contentPanel.getBackground());
         panel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(2,0,0,2, new Color(0x242424)),
-                BorderFactory.createEmptyBorder(5,5,5,5)
+                BorderFactory.createEmptyBorder(0,10,10,10)
         ));
 
         JLabel label = new JLabel("Filter");
@@ -310,7 +364,76 @@ public class MainClass extends FrameTemplate {
         Font f = derivedFont.deriveFont(18f);
         label.setFont(f);
 
+        JCheckBox favCheck = new JCheckBox("Favorites");
+        favCheck.setSelected(isFavList);
+        favCheck.setPreferredSize(new Dimension(200, 25));
+        favCheck.setOpaque(false);
+        favCheck.setBorder(null);
+        favCheck.setFont(interFont);
+        favCheck.setForeground(new Color(0xC4C4C4));
+        favCheck.setIcon(checkbox_icon);
+        favCheck.setSelectedIcon(checkbox_check_icon);
+        favCheck.addItemListener(e -> {
+            isFavList = favCheck.isSelected();
+            refresh();
+        });
+        JCheckBox highCheck = new JCheckBox("High importance");
+        highCheck.setSelected(highBool);
+        highCheck.setPreferredSize(new Dimension(200, 25));
+        highCheck.setOpaque(false);
+        highCheck.setBorder(null);
+        highCheck.setFont(interFont);
+        highCheck.setForeground(new Color(0xC4C4C4));
+        highCheck.setIcon(checkbox_icon);
+        highCheck.setSelectedIcon(checkbox_check_icon);
+        highCheck.addItemListener(e -> {
+            highBool = highCheck.isSelected();
+            refresh();
+        });
+
+        JCheckBox midCheck = new JCheckBox("Mid importance");
+        midCheck.setSelected(midBool);
+        midCheck.setPreferredSize(new Dimension(200, 25));
+        midCheck.setOpaque(false);
+        midCheck.setBorder(null);
+        midCheck.setFont(interFont);
+        midCheck.setForeground(new Color(0xC4C4C4));
+        midCheck.setIcon(checkbox_icon);
+        midCheck.setSelectedIcon(checkbox_check_icon);
+        midCheck.addItemListener(e -> {
+            midBool = midCheck.isSelected();
+            refresh();
+        });
+
+        JCheckBox lowCheck = new JCheckBox("Low importance");
+        lowCheck.setSelected(lowBool);
+        lowCheck.setPreferredSize(new Dimension(200, 25));
+        lowCheck.setOpaque(false);
+        lowCheck.setBorder(null);
+        lowCheck.setFont(interFont);
+        lowCheck.setForeground(new Color(0xC4C4C4));
+        lowCheck.setIcon(checkbox_icon);
+        lowCheck.setSelectedIcon(checkbox_check_icon);
+        lowCheck.addItemListener(e -> {
+            lowBool = lowCheck.isSelected();
+            refresh();
+        });
+
+        JLabel copyrights = new JLabel("Copyrights@SarryGaez2024");
+        copyrights.setPreferredSize(new Dimension(225, 30));
+        copyrights.setFont(interFont);
+        copyrights.setForeground(new Color(0x565656));
+        copyrights.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(2, 0, 0, 0, new Color(0x3C3C3C)),
+                BorderFactory.createEmptyBorder(5, 0, 0 ,0)
+        ));
+
         panel.add(label);
+        panel.add(favCheck);
+        panel.add(highCheck);
+        panel.add(midCheck);
+        panel.add(lowCheck);
+        panel.add(copyrights);
         return panel;
     }
 
