@@ -1,5 +1,6 @@
 # CodexPad
-> Note : no .exe yet I will make and .exe version later on
+> Note : .exe can be found in this link : https://github.com/SarryGeezOwO/CodexPad_app<br>
+> Please don't steal other peoples code, (even though this app is already poorly written)
 <p>an application that uses Java and Swing. Saves notes as a Text file, this application is completely free to use.</p>
 <p>Notes that have been created will be located in the NoteStorage folder.</p>
 <br>
