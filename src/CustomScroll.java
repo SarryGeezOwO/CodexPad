@@ -12,7 +12,7 @@ public class CustomScroll extends JScrollPane {
     class CustomBars extends BasicScrollBarUI {
         @Override
         protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
-            g.setColor(new Color(0));
+            g.setColor(new Color(0xFF1818));
             super.paintTrack(g, c, trackBounds);
         }
 

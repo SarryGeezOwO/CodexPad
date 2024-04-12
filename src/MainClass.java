@@ -591,8 +591,13 @@ public class MainClass extends FrameTemplate {
             toolbar.add(impLabel);
             toolbar.add(highBtn); toolbar.add(midBtn); toolbar.add(lowBtn);
 
+            CustomScroll textScroll = new CustomScroll(textArea);
+            textScroll.setBorder(null);
+            textScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            textScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+
             panel.add(titleField, BorderLayout.NORTH);
-            panel.add(textArea, BorderLayout.CENTER);
+            panel.add(textScroll, BorderLayout.CENTER);
             panel.add(toolbar, BorderLayout.SOUTH);
         }else {
             JLabel reminder = new JLabel("No note is currently selected...");
